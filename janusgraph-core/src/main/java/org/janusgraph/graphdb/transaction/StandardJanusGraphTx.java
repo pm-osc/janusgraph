@@ -51,11 +51,13 @@ import org.janusgraph.diskstorage.BackendException;
 import org.janusgraph.diskstorage.BackendTransaction;
 import org.janusgraph.diskstorage.EntryList;
 import org.janusgraph.diskstorage.StaticBuffer;
+import org.janusgraph.diskstorage.indexing.IndexQuery;
 import org.janusgraph.diskstorage.indexing.IndexTransaction;
 import org.janusgraph.diskstorage.keycolumnvalue.MultiKeysQueryGroups;
 import org.janusgraph.diskstorage.keycolumnvalue.SliceQuery;
 import org.janusgraph.diskstorage.util.StaticArrayBuffer;
 import org.janusgraph.diskstorage.util.time.TimestampProvider;
+import org.janusgraph.graphdb.configuration.GraphDatabaseConfiguration;
 import org.janusgraph.graphdb.database.EdgeSerializer;
 import org.janusgraph.graphdb.database.IndexSerializer;
 import org.janusgraph.graphdb.database.StandardJanusGraph;
@@ -1533,9 +1535,12 @@ public class StandardJanusGraphTx extends JanusGraphBlueprintsTransaction implem
         }
 
         @Override
-        public Iterator<JanusGraphElement> execute(final GraphCentricQuery query, final JointIndexQuery indexQuery, final Object exeInfo, final QueryProfiler profiler) {
+        public Iterator<JanusGraphElement> execute(final GraphCentricQuery query, final JointIndexQuery indexQuery,
+                final Object exeInfo, final QueryProfiler profiler) {
+            //System.err.println("StandardJanusGraphTx --> EXECUTE");
             Iterator<JanusGraphElement> iterator;
             if (!indexQuery.isEmpty()) {
+                //System.err.println("NON EMPTY INDEX QUERY");
                 final List<QueryUtil.IndexCall<Object>> retrievals = new ArrayList<>();
                 // Leave first index for streaming, and prepare the rest for intersecting and lookup
                 for (int i = 1; i < indexQuery.size(); i++) {
@@ -1550,11 +1555,58 @@ public class StandardJanusGraphTx extends JanusGraphBlueprintsTransaction implem
                         }
                     });
                 }
+
+                
+                final JointIndexQuery.Subquery subquery0 = indexQuery.getQuery(0);
+                final IndexType index0 = subquery0.getIndex();
+                if (index0.isMixedIndex()) {
+                    // get the backing index name
+                    String indexName = index0.getBackingIndexName();
+                    System.err.println("+++++++++++++++++++++++++++++++++++++");
+                    System.err.println(graph.configuration().getString("storage.backend"));
+                    System.err.println(graph.getConfiguration().getBackendDescription());
+                    System.err.println(graph.configuration().getString("index." + indexName + ".backend"));
+                    System.err.println("Query order");
+                    // iterate over the order and drop the ones where the property has list cardinality
+                    Set<String> ordersToDrop = new HashSet<>();
+                    Iterator<org.janusgraph.graphdb.internal.OrderList.OrderEntry> q1 = query.getOrder().iterator();
+                    while (q1.hasNext()) {
+                        org.janusgraph.graphdb.internal.OrderList.OrderEntry orderEntry = q1.next();
+                        PropertyKey pk = orderEntry.getKey();
+                        if (pk.cardinality() == Cardinality.LIST) {
+                            ordersToDrop.add(pk.name());
+                            q1.remove();
+                        }
+                    }
+
+                    System.err.println(query.getOrder());
+                    System.err.println();
+                    System.err.println("Index order");
+                    
+                    // iterate over the order and drop the ones where the property has list
+                    // cardinality
+                    System.err.println("?????? 1111 ?????");
+                    System.err.println(subquery0.getMixedQuery().getOrder().getClass());
+                    System.err.println("???????????");
+
+                    Iterator<IndexQuery.OrderEntry> q2 = subquery0.getMixedQuery().getOrder().iterator();
+                    while (q2.hasNext()) {
+                        IndexQuery.OrderEntry orderEntry = q2.next();
+                        if (ordersToDrop.contains(orderEntry.getKey())) {
+                            q2.remove();
+                        }
+                    }
+
+                    System.err.println(subquery0.getMixedQuery().getOrder());
+                    System.err.println("+++++++++++++++++++++++++++++++++++++");
+                }   
+                
                 // Constructs an iterator which lazily streams results from 1st index, and filters by looking up in the intersection of results from all other indices (if any)
                 // NOTE NO_LIMIT is passed to processIntersectingRetrievals to prevent incomplete intersections, which could lead to missed results
                 iterator = new SubqueryIterator(indexQuery.getQuery(0), indexSerializer, txHandle, StandardJanusGraphTx.this, indexCache, indexQuery.getLimit(), getConversionFunction(query.getResultType()),
                         retrievals.isEmpty() ? null: QueryUtil.processIntersectingRetrievals(retrievals, Query.NO_LIMIT));
             } else {
+                System.err.println("EMPTY INDEX QUERY");
                 if (config.hasForceIndexUsage()) throw new JanusGraphException("Could not find a suitable index to answer graph query and graph scans are disabled: " + query);
                 log.warn("Query requires iterating over all vertices [{}]. For better performance, use indexes", query.getCondition());
 

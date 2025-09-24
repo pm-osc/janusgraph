@@ -405,13 +405,13 @@ public class IndexSerializer {
                     return new PredicateCondition<>(key2Field(index, key), pc.getPredicate(), pc.getValue());
                 }
             });
-        ImmutableList<IndexQuery.OrderEntry> newOrders = IndexQuery.NO_ORDER;
+        List<IndexQuery.OrderEntry> newOrders = IndexQuery.NO_ORDER;
         if (!orders.isEmpty() && IndexSelectionUtil.indexCoversOrder(index,orders)) {
-            final ImmutableList.Builder<IndexQuery.OrderEntry> lb = ImmutableList.builder();
+            final List<IndexQuery.OrderEntry> lb = new ArrayList<IndexQuery.OrderEntry>();
             for (int i = 0; i < orders.size(); i++) {
                 lb.add(new IndexQuery.OrderEntry(key2Field(index,orders.getKey(i)), orders.getOrder(i), orders.getKey(i).dataType()));
             }
-            newOrders = lb.build();
+            newOrders = lb;
         }
         return new IndexQuery(index.getStoreName(), newCondition, newOrders);
     }
@@ -479,10 +479,10 @@ public class IndexSerializer {
         return queryStr;
     }
 
-    private ImmutableList<IndexQuery.OrderEntry> getOrders(IndexQueryBuilder query, final ElementCategory resultType,
+    private List<IndexQuery.OrderEntry> getOrders(IndexQueryBuilder query, final ElementCategory resultType,
                                                            final StandardJanusGraphTx transaction, MixedIndexType index){
         if (query.getOrders() == null) {
-            return ImmutableList.of();
+            return new ArrayList<IndexQuery.OrderEntry>();
         }
         Preconditions.checkArgument(index.getElement()==resultType,"Index is not configured for the desired result type: %s",resultType);
         List<IndexQuery.OrderEntry> orderReplacement = new ArrayList<>();
@@ -505,7 +505,7 @@ public class IndexSerializer {
                                                 final BackendTransaction backendTx, final StandardJanusGraphTx transaction) {
         final MixedIndexType index = IndexRecordUtil.getMixedIndex(query.getIndex(), transaction);
         final String queryStr = createQueryString(query, resultType, transaction, index);
-        ImmutableList<IndexQuery.OrderEntry> orders = getOrders(query, resultType, transaction, index);
+        List<IndexQuery.OrderEntry> orders = getOrders(query, resultType, transaction, index);
         final RawQuery rawQuery = new RawQuery(index.getStoreName(),queryStr,orders,query.getParameters());
         if (query.hasLimit()) rawQuery.setLimit(query.getLimit());
         rawQuery.setOffset(query.getOffset());

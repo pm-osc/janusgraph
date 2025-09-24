@@ -23,6 +23,8 @@ import org.janusgraph.graphdb.query.BaseQuery;
 import org.janusgraph.graphdb.query.Query;
 import org.janusgraph.graphdb.query.condition.Condition;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -37,15 +39,15 @@ import java.util.Objects;
 
 public class IndexQuery extends BaseQuery implements BackendQuery<IndexQuery> {
 
-    public static final ImmutableList<OrderEntry> NO_ORDER = ImmutableList.of();
+    public static final List<OrderEntry> NO_ORDER = new ArrayList<OrderEntry>();
 
     private final String store;
     private final Condition condition;
-    private final ImmutableList<OrderEntry> orders;
+    private final List<OrderEntry> orders;
 
     private final int hashcode;
 
-    public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders, int limit) {
+    public IndexQuery(String store, Condition condition, List<OrderEntry> orders, int limit) {
         super(limit);
         Preconditions.checkNotNull(store);
         Preconditions.checkNotNull(condition);
@@ -57,7 +59,7 @@ public class IndexQuery extends BaseQuery implements BackendQuery<IndexQuery> {
         this.hashcode = Objects.hash(condition, store, orders, limit);
     }
 
-    public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders) {
+    public IndexQuery(String store, Condition condition, List<OrderEntry> orders) {
         this(store, condition, orders, Query.NO_LIMIT);
     }
 
