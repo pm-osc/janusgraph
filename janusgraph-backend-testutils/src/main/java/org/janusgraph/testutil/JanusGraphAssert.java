@@ -37,6 +37,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -77,6 +78,20 @@ public class JanusGraphAssert {
 
     public static<V extends Element> void assertNotEmpty(Object object) {
         assertFalse(isEmpty(object));
+    }
+
+    public static <E extends Element> void assertTraversalAndIndexUsage(List<String> containsText,
+            Supplier<GraphTraversal<?, E>> traversal,
+            E... expectedElements) {
+
+        // assert expected results
+        assertTraversal(traversal.get(), expectedElements);
+
+        // assert index usage
+        String profileStr = traversal.get().profile().toList().toString();
+        for (String text : containsText) {
+            assertTrue(profileStr.contains(text));
+        }
     }
 
     public static<E extends Element> void assertTraversal(GraphTraversal<?, E> req, E... expectedElements) {
