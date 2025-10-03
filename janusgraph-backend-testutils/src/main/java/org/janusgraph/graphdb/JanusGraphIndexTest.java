@@ -4473,14 +4473,14 @@ public abstract class JanusGraphIndexTest extends JanusGraphBaseTest {
         org.apache.tinkerpop.gremlin.process.traversal.Order ORDER_DESC = org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
 
         // ordering without using index on SINGLE cardinality property
-        // Supplier<GraphTraversal<?, Vertex>> tFullscanSingle = () -> g.V().order().by("name1");
-        // assertTraversalAndIndexUsage(
-        //     Arrays.asList(
-        //         "query=[]",
-        //         "_fullscan=true"
-        //     ),
-        //     tFullscanSingle, v1, v2, v3, v4, v5, v6
-        // );
+        Supplier<GraphTraversal<?, Vertex>> tFullscanSingle = () -> g.V().order().by("name1");
+        assertTraversalAndIndexUsage(
+            Arrays.asList(
+                "query=[]",
+                "_fullscan=true"
+            ),
+            tFullscanSingle, v1, v2, v3, v4, v5, v6
+        );
 
         // ordering without using index on LIST cardinality property with multiple values
         // throws IllegalStateException with message "Multiple properties exist for the provided key, use Vertex.properties(name2)"
