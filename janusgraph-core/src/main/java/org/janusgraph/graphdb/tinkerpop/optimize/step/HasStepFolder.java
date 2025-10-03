@@ -127,18 +127,12 @@ public interface HasStepFolder<S, E> extends Step<S, E> {
                 }
             }
         }
+        
+        if (indexBackends.size() == 0) {
+            return false;
+        }
+
         return true;
-
-        // // if the graph does not have any mixed index backend configured,
-        // // list property ordering via mixed index is surely not supported
-        // if (indexBackends.size() == 0) {
-        //     return false;
-        // }
-
-        // // the graph has configured mixed index backend/backends and none
-        // // of them is Lucene so list property ordering via mixed index
-        // // is supported as both Solr and Elasticsearch supports this
-        // return true;
     }
 
     static boolean validJanusGraphOrder(OrderGlobalStep orderGlobalStep, Traversal rootTraversal,
