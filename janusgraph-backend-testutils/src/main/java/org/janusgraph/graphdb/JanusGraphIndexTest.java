@@ -4484,7 +4484,7 @@ public abstract class JanusGraphIndexTest extends JanusGraphBaseTest {
 
         // get the schema
         String schema = mgmt.printSchema();
-        String profile = g.V().has("name1").order().by("name1", ORDER_DESC).profile().toList().toString();
+        String profile = g.V().has("name2").order().by("name2", ORDER_DESC).profile().toList().toString();
 
         throw new Exception(schema + " \n\n\n " + profile);
 
