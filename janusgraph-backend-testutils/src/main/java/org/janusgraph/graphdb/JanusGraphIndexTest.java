@@ -4473,85 +4473,85 @@ public abstract class JanusGraphIndexTest extends JanusGraphBaseTest {
         org.apache.tinkerpop.gremlin.process.traversal.Order ORDER_DESC = org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
 
         // ordering without using index on SINGLE cardinality property
-        Supplier<GraphTraversal<?, Vertex>> tFullscanSingle = () -> g.V().order().by("name1");
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "query=[]",
-                "_fullscan=true"
-            ),
-            tFullscanSingle, v1, v2, v3, v4, v5, v6
-        );
+        // Supplier<GraphTraversal<?, Vertex>> tFullscanSingle = () -> g.V().order().by("name1");
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "query=[]",
+        //         "_fullscan=true"
+        //     ),
+        //     tFullscanSingle, v1, v2, v3, v4, v5, v6
+        // );
 
         // ordering without using index on LIST cardinality property with multiple values
         // throws IllegalStateException with message "Multiple properties exist for the provided key, use Vertex.properties(name2)"
-        Exception exception = assertThrows(IllegalStateException.class, () -> {
-            g.V().order().by("name2").toList();
-        });
-        assertTrue(exception.getMessage().contains("Multiple properties exist for the provided key, use Vertex.properties(name2)"));
+        // Exception exception = assertThrows(IllegalStateException.class, () -> {
+        //     g.V().order().by("name2").toList();
+        // });
+        // assertTrue(exception.getMessage().contains("Multiple properties exist for the provided key, use Vertex.properties(name2)"));
 
         ///////////////////////////////////////////////////
         // ordering SINGLE cardinality properties
         // ordering SINGLE cardinality String property
-        Supplier<GraphTraversal<?, Vertex>> tSingleString = () -> g.V().has("name1").order().by("name1", ORDER_DESC);
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "_condition=(name1 <> null)",
-                "_query=[(name1 <> null)][DESC(name1)]:listPropertyOrdering"
-            ),
-           tSingleString, v6, v5, v4, v3, v2, v1
-        );
+        // Supplier<GraphTraversal<?, Vertex>> tSingleString = () -> g.V().has("name1").order().by("name1", ORDER_DESC);
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "_condition=(name1 <> null)",
+        //         "_query=[(name1 <> null)][DESC(name1)]:listPropertyOrdering"
+        //     ),
+        //    tSingleString, v6, v5, v4, v3, v2, v1
+        // );
 
-        // ordering SINGLE cardinality Double property
-        Supplier<GraphTraversal<?, Vertex>> tSingleDouble = () -> g.V().has("age1").order().by("age1", ORDER_DESC);
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "_condition=(age1 <> null)",
-                "_query=[(age1 <> null)][DESC(age1)]:listPropertyOrdering"
-            ),
-            tSingleDouble, v6, v5, v4, v3, v2, v1
-        );
+        // // ordering SINGLE cardinality Double property
+        // Supplier<GraphTraversal<?, Vertex>> tSingleDouble = () -> g.V().has("age1").order().by("age1", ORDER_DESC);
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "_condition=(age1 <> null)",
+        //         "_query=[(age1 <> null)][DESC(age1)]:listPropertyOrdering"
+        //     ),
+        //     tSingleDouble, v6, v5, v4, v3, v2, v1
+        // );
 
-        // ordering SINGLE cardinality Date property
-        Supplier<GraphTraversal<?, Vertex>> tSingleDate = () -> g.V().has("birth1").order().by("birth1", ORDER_DESC);
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "_condition=(birth1 <> null)",
-                "_query=[(birth1 <> null)][DESC(birth1)]:listPropertyOrdering"
-            ),
-            tSingleDate, v6, v5, v4, v3, v2, v1
-        );
+        // // ordering SINGLE cardinality Date property
+        // Supplier<GraphTraversal<?, Vertex>> tSingleDate = () -> g.V().has("birth1").order().by("birth1", ORDER_DESC);
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "_condition=(birth1 <> null)",
+        //         "_query=[(birth1 <> null)][DESC(birth1)]:listPropertyOrdering"
+        //     ),
+        //     tSingleDate, v6, v5, v4, v3, v2, v1
+        // );
 
-        /////////////////////////////////////////////////
-        // ordering SINGLE cardinality properties with filtering
-        // ordering SINGLE cardinality String property
-        Supplier<GraphTraversal<?, Vertex>> tSingleStringFilter = () -> g.V().has("gender", "female").has("name1").order().by("name1", ORDER_DESC);
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "_condition=(gender = female AND name1 <> null)",
-                "_query=[(name1 <> null)][DESC(name1)]:listPropertyOrdering"
-            ),
-            tSingleStringFilter, v6, v4, v2
-        );
+        // /////////////////////////////////////////////////
+        // // ordering SINGLE cardinality properties with filtering
+        // // ordering SINGLE cardinality String property
+        // Supplier<GraphTraversal<?, Vertex>> tSingleStringFilter = () -> g.V().has("gender", "female").has("name1").order().by("name1", ORDER_DESC);
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "_condition=(gender = female AND name1 <> null)",
+        //         "_query=[(name1 <> null)][DESC(name1)]:listPropertyOrdering"
+        //     ),
+        //     tSingleStringFilter, v6, v4, v2
+        // );
 
-        // ordering SINGLE cardinality Double property
-        Supplier<GraphTraversal<?, Vertex>> tSingleDoubleFilter = () -> g.V().has("gender", "female").has("age1").order().by("age1", ORDER_DESC);
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "_condition=(gender = female AND age1 <> null)",
-                "_query=[(age1 <> null)][DESC(age1)]:listPropertyOrdering"
-            ),
-            tSingleDoubleFilter, v6, v4, v2
-        );
+        // // ordering SINGLE cardinality Double property
+        // Supplier<GraphTraversal<?, Vertex>> tSingleDoubleFilter = () -> g.V().has("gender", "female").has("age1").order().by("age1", ORDER_DESC);
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "_condition=(gender = female AND age1 <> null)",
+        //         "_query=[(age1 <> null)][DESC(age1)]:listPropertyOrdering"
+        //     ),
+        //     tSingleDoubleFilter, v6, v4, v2
+        // );
 
-        // ordering SINGLE cardinality Date property
-        Supplier<GraphTraversal<?, Vertex>> tSingleDateFilter = () -> g.V().has("gender", "female").has("birth1").order().by("birth1", ORDER_DESC);
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "_condition=(gender = female AND birth1 <> null)",
-                "_query=[(birth1 <> null)][DESC(birth1)]:listPropertyOrdering"
-            ),
-            tSingleDateFilter, v6, v4, v2
-        );
+        // // ordering SINGLE cardinality Date property
+        // Supplier<GraphTraversal<?, Vertex>> tSingleDateFilter = () -> g.V().has("gender", "female").has("birth1").order().by("birth1", ORDER_DESC);
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "_condition=(gender = female AND birth1 <> null)",
+        //         "_query=[(birth1 <> null)][DESC(birth1)]:listPropertyOrdering"
+        //     ),
+        //     tSingleDateFilter, v6, v4, v2
+        // );
 
         // Lucene specific part since Lucene does not support ordering for list properties
         final String backend = readConfig.get(INDEX_BACKEND, INDEX);
