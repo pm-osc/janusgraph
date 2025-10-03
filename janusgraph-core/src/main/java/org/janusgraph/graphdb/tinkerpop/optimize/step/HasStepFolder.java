@@ -47,7 +47,7 @@ import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
+//import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -103,36 +103,37 @@ public interface HasStepFolder<S, E> extends Step<S, E> {
     }
     
     static boolean isIndexBackendsSupportsListPropertyOrdering(JanusGraphTransaction tx) {
-        List<String> indexBackends = new ArrayList<String>();
-        Iterator<String> configIt = tx.configuration().getKeys();
-        while (configIt.hasNext()) {
-            String configKey = configIt.next();
-            if (configKey.matches("index\\.[^.]+\\.backend")) {
-                String configValue = tx.configuration().getString(configKey, "").toLowerCase().trim();
-                if (!configValue.isEmpty()) {
-                    indexBackends.add(configValue);
-                }
-
-                // get the value and check if it is lucene
-                // if any of the mixed index backends are Lucene, let's
-                // conclude immediately that the graph's mixed index backends
-                // do not support ordering list properties via mixed index
-                if (configValue.equals("lucene")) {
-                    return false;
-                }
-            }
-        }
-
-        // if the graph does not have any mixed index backend configured,
-        // list property ordering via mixed index is surely not supported
-        if (indexBackends.size() == 0) {
-            return false;
-        }
-
-        // the graph has configured mixed index backend/backends and none
-        // of them is Lucene so list property ordering via mixed index
-        // is supported as both Solr and Elasticsearch supports this
         return true;
+        // List<String> indexBackends = new ArrayList<String>();
+        // Iterator<String> configIt = tx.configuration().getKeys();
+        // while (configIt.hasNext()) {
+        //     String configKey = configIt.next();
+        //     if (configKey.matches("index\\.[^.]+\\.backend")) {
+        //         String configValue = tx.configuration().getString(configKey, "").toLowerCase().trim();
+        //         if (!configValue.isEmpty()) {
+        //             indexBackends.add(configValue);
+        //         }
+
+        //         // get the value and check if it is lucene
+        //         // if any of the mixed index backends are Lucene, let's
+        //         // conclude immediately that the graph's mixed index backends
+        //         // do not support ordering list properties via mixed index
+        //         if (configValue.equals("lucene")) {
+        //             return false;
+        //         }
+        //     }
+        // }
+
+        // // if the graph does not have any mixed index backend configured,
+        // // list property ordering via mixed index is surely not supported
+        // if (indexBackends.size() == 0) {
+        //     return false;
+        // }
+
+        // // the graph has configured mixed index backend/backends and none
+        // // of them is Lucene so list property ordering via mixed index
+        // // is supported as both Solr and Elasticsearch supports this
+        // return true;
     }
 
     static boolean validJanusGraphOrder(OrderGlobalStep orderGlobalStep, Traversal rootTraversal,
