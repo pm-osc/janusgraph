@@ -42,19 +42,31 @@ public class IndexQuery extends BaseQuery implements BackendQuery<IndexQuery> {
     private final String store;
     private final Condition condition;
     private final ImmutableList<OrderEntry> orders;
+    private final ImmutableList<OrderEntry> ordersAll;
+    private final boolean supportsOrderingListProperty;
 
     private final int hashcode;
 
-    public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders, int limit) {
+    public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders, ImmutableList<OrderEntry> ordersAll, Boolean supportsOrderingListProperty, int limit) {
         super(limit);
         Preconditions.checkNotNull(store);
         Preconditions.checkNotNull(condition);
         Preconditions.checkArgument(orders != null);
         this.condition = condition;
         this.orders = orders;
+        this.ordersAll = ordersAll;
         this.store = store;
+        this.supportsOrderingListProperty = supportsOrderingListProperty;
 
         this.hashcode = Objects.hash(condition, store, orders, limit);
+    }
+
+    public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders, int limit) {
+        this(store, condition, orders, NO_ORDER, false, Query.NO_LIMIT);
+    }
+
+    public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders, ImmutableList<OrderEntry> ordersAll, boolean supportsOrderingListProperty) {
+        this(store, condition, orders, ordersAll, supportsOrderingListProperty, Query.NO_LIMIT);
     }
 
     public IndexQuery(String store, Condition condition, ImmutableList<OrderEntry> orders) {
@@ -77,6 +89,10 @@ public class IndexQuery extends BaseQuery implements BackendQuery<IndexQuery> {
         return orders;
     }
 
+    public List<OrderEntry> getOrderAll() {
+        return ordersAll;
+    }
+
     public String getStore() {
         return store;
     }
@@ -88,7 +104,7 @@ public class IndexQuery extends BaseQuery implements BackendQuery<IndexQuery> {
 
     @Override
     public IndexQuery updateLimit(int newLimit) {
-        return new IndexQuery(store, condition, orders, newLimit);
+        return new IndexQuery(store, condition, orders, ordersAll, supportsOrderingListProperty, newLimit);
     }
 
     @Override
@@ -110,7 +126,15 @@ public class IndexQuery extends BaseQuery implements BackendQuery<IndexQuery> {
     public String toString() {
         final StringBuilder b = new StringBuilder();
         b.append("[").append(condition.toString()).append("]");
-        if (!orders.isEmpty()) b.append(orders);
+        // depending on the mixed indexing backend capability either use:
+        // 1. orders (contains only single cardinality properties)
+        // 2. ordersAll (contains both single and list cardinality properties)
+        if (supportsOrderingListProperty) {
+            if (!ordersAll.isEmpty()) b.append(ordersAll);
+        }
+        else {
+            if (!orders.isEmpty()) b.append(orders);
+        }
         if (hasLimit()) b.append("(").append(getLimit()).append(")");
         b.append(":").append(store);
         return b.toString();

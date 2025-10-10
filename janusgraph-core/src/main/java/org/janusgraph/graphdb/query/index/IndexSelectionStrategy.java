@@ -31,12 +31,12 @@ import java.util.Set;
 public interface IndexSelectionStrategy {
     SelectedIndexQuery selectIndices(final Set<IndexType> indexCandidates,
                                      final MultiCondition<JanusGraphElement> conditions,
-                                     final Set<Condition> coveredClauses, OrderList orders,
+                                     final Set<Condition> coveredClauses, OrderList orders, OrderList ordersAll,
                                      IndexSerializer serializer);
 
     SelectedIndexQuery selectIndices(final ElementCategory resultType,
                                      final MultiCondition<JanusGraphElement> conditions,
-                                     final Set<Condition> coveredClauses, OrderList orders,
+                                     final Set<Condition> coveredClauses, OrderList orders, OrderList ordersAll,
                                      IndexSerializer serializer);
     class SelectedIndexQuery {
         private JointIndexQuery query;

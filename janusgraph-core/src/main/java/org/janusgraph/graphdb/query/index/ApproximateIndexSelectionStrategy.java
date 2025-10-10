@@ -49,7 +49,7 @@ public class ApproximateIndexSelectionStrategy
     @Override
     public SelectedIndexQuery selectIndices(final Set<IndexType> rawCandidates,
                                             final MultiCondition<JanusGraphElement> conditions,
-                                            final Set<Condition> coveredClauses, OrderList orders,
+                                            final Set<Condition> coveredClauses, OrderList orders, OrderList ordersAll,
                                             IndexSerializer serializer) {
         final JointIndexQuery jointQuery = new JointIndexQuery();
         boolean isSorted = orders.isEmpty();
@@ -66,7 +66,9 @@ public class ApproximateIndexSelectionStrategy
 
                 boolean supportsSort =
                     orders.isEmpty() ||
-                    coveredClauses.isEmpty() && index.isMixedIndex() &&
+                    //ordersAll.isEmpty() ||
+                                coveredClauses.isEmpty() && index.isMixedIndex() &&
+                    // TODO need to cater for this????
                         IndexSelectionUtil.indexCoversOrder((MixedIndexType) index, orders);
                 indexCandidate.setScore(calculateIndexCandidateScore(indexCandidate, coveredClauses, supportsSort));
 
@@ -83,7 +85,7 @@ public class ApproximateIndexSelectionStrategy
                     isSorted = candidateSupportsSort;
                 }
                 coveredClauses.addAll(bestCandidate.getSubCover());
-                addToJointQuery(bestCandidate, jointQuery, serializer, orders);
+                addToJointQuery(bestCandidate, jointQuery, serializer, orders, ordersAll);
             } else {
                 break;
             }

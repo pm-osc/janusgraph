@@ -66,10 +66,10 @@ public abstract class AbstractIndexSelectionStrategy implements IndexSelectionSt
     @Override
     public SelectedIndexQuery selectIndices(final ElementCategory resultType,
                                             final MultiCondition<JanusGraphElement> conditions,
-                                            final Set<Condition> coveredClauses, OrderList orders,
+                                            final Set<Condition> coveredClauses, OrderList orders, OrderList ordersAll,
                                             IndexSerializer serializer) {
         final Set<IndexType> rawCandidates = createIndexRawCandidates(conditions, resultType, serializer);
-        return selectIndices(rawCandidates, conditions, coveredClauses, orders, serializer);
+        return selectIndices(rawCandidates, conditions, coveredClauses, orders, ordersAll, serializer);
     }
 
     //Compile all indexes that cover at least one of the query conditions
@@ -134,13 +134,13 @@ public abstract class AbstractIndexSelectionStrategy implements IndexSelectionSt
         return new IndexCandidate(index, subCover, subCondition);
     }
 
-    protected void addToJointQuery(final IndexCandidate indexCandidate, final JointIndexQuery jointQuery, final IndexSerializer serializer, final OrderList orders) {
+    protected void addToJointQuery(final IndexCandidate indexCandidate, final JointIndexQuery jointQuery, final IndexSerializer serializer, final OrderList orders, final OrderList ordersAll) {
         if (indexCandidate.getIndex().isCompositeIndex()) {
             jointQuery.add((CompositeIndexType) indexCandidate.getIndex(), serializer.getQuery(
                 (CompositeIndexType) indexCandidate.getIndex(), (List<Object[]>) indexCandidate.getSubCondition()));
         } else {
             jointQuery.add((MixedIndexType) indexCandidate.getIndex(), serializer.getQuery(
-                (MixedIndexType) indexCandidate.getIndex(), (Condition) indexCandidate.getSubCondition(), orders));
+                (MixedIndexType) indexCandidate.getIndex(), (Condition) indexCandidate.getSubCondition(), orders, ordersAll));
         }
     }
 

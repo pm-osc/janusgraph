@@ -124,6 +124,7 @@ public class JanusGraphPropertiesStep<E> extends PropertiesStep<E> implements Ha
             query.has(condition.getKey(), JanusGraphPredicateUtils.convert(condition.getBiPredicate()), condition.getValue());
         }
         for (final OrderEntry order : orders) query.orderBy(order.key, order.order);
+        //for (final OrderEntry order : ordersAll) query.orderByAll(order.key, order.order);
         if (limit != BaseQuery.NO_LIMIT) query.limit(limit);
         return query;
     }
@@ -198,6 +199,7 @@ public class JanusGraphPropertiesStep<E> extends PropertiesStep<E> implements Ha
     private final ArrayList<HasContainer> hasContainers;
     private int limit;
     private final List<HasStepFolder.OrderEntry> orders = new ArrayList<>();
+    private final List<HasStepFolder.OrderEntry> ordersAll = new ArrayList<>();
 
     @Override
     public void ensureAdditionalHasContainersCapacity(int additionalSize) {
@@ -222,6 +224,11 @@ public class JanusGraphPropertiesStep<E> extends PropertiesStep<E> implements Ha
     @Override
     public void orderBy(String key, Order order) {
         orders.add(new HasStepFolder.OrderEntry(key, order));
+    }
+
+    @Override
+    public void orderByAll(String key, Order order) {
+        ordersAll.add(new HasStepFolder.OrderEntry(key, order));
     }
 
     @Override

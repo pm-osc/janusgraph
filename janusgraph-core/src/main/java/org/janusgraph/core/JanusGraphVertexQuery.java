@@ -80,6 +80,8 @@ public interface JanusGraphVertexQuery<Q extends JanusGraphVertexQuery<Q>> exten
     @Override
     Q orderBy(String key, Order order);
 
+    // @Override
+    // Q orderByAll(String key, Order order);
 
     /* ---------------------------------------------------------------
     * Query execution

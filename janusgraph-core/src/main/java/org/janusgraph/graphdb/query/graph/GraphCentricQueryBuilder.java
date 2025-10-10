@@ -89,6 +89,7 @@ public class GraphCentricQueryBuilder implements JanusGraphQuery<GraphCentricQue
      * The order in which the elements should be returned. None by default.
      */
     private OrderList orders = new OrderList();
+    private OrderList ordersAll = new OrderList();
     /**
      * The limit of this query. No limit by default.
      */
@@ -202,9 +203,23 @@ public class GraphCentricQueryBuilder implements JanusGraphQuery<GraphCentricQue
         Preconditions.checkArgument(Comparable.class.isAssignableFrom(key.dataType()),
                 "Can only order on keys with comparable data type. [%s] has datatype [%s]", key.name(), key.dataType());
         Preconditions.checkArgument(key.cardinality()== Cardinality.SINGLE,
-                "Ordering is undefined on multi-valued key [%s]", key.name());
+               "Ordering is undefined on multi-valued key [%s]", key.name());
         Preconditions.checkArgument(!orders.containsKey(key), "orders [%s] already contains key [%s]", orders, key);
         orders.add(key, Order.convert(order));
+        return this;
+    }
+
+    @Override
+    public GraphCentricQueryBuilder orderByAll(String keyName,  org.apache.tinkerpop.gremlin.process.traversal.Order order) {
+        Preconditions.checkArgument(tx.containsPropertyKey(keyName),"Provided key does not exist: %s",keyName);
+        final PropertyKey key = tx.getPropertyKey(keyName);
+        Preconditions.checkArgument(key!=null && order!=null,"Need to specify and key and an order");
+        Preconditions.checkArgument(Comparable.class.isAssignableFrom(key.dataType()),
+                "Can only order on keys with comparable data type. [%s] has datatype [%s]", key.name(), key.dataType());
+        // Preconditions.checkArgument(key.cardinality()== Cardinality.SINGLE,
+        // "Ordering is undefined on multi-valued key [%s]", key.name());
+        Preconditions.checkArgument(!ordersAll.containsKey(key), "orders [%s] already contains key [%s]", ordersAll, key);
+        ordersAll.add(key, Order.convert(order));
         return this;
     }
 
@@ -289,9 +304,13 @@ public class GraphCentricQueryBuilder implements JanusGraphQuery<GraphCentricQue
         orders.makeImmutable();
         if (orders.isEmpty()) orders = OrderList.NO_ORDER;
 
+        // Prepare ordersAll
+        ordersAll.makeImmutable();
+        if (ordersAll.isEmpty()) ordersAll = OrderList.NO_ORDER;
+
         final Set<Condition> coveredClauses = new HashSet<>();
         final IndexSelectionStrategy.SelectedIndexQuery selectedIndex = indexSelector.selectIndices(
-            resultType, conditions, coveredClauses, orders, serializer);
+            resultType, conditions, coveredClauses, orders, ordersAll, serializer);
 
         BackendQueryHolder<JointIndexQuery> query;
         if (!coveredClauses.isEmpty()) {
@@ -308,7 +327,7 @@ public class GraphCentricQueryBuilder implements JanusGraphQuery<GraphCentricQue
         } else {
             query = new BackendQueryHolder<>(new JointIndexQuery(), false, selectedIndex.isSorted());
         }
-        return new GraphCentricQuery(resultType, conditions, orders, query, limit);
+        return new GraphCentricQuery(resultType, conditions, orders, ordersAll, query, limit);
     }
 
     private Or<JanusGraphElement> constructOrCondition(List<List<PredicateCondition<String, JanusGraphElement>>> globalConstraint) {

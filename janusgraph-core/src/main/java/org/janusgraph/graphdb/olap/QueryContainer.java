@@ -229,7 +229,11 @@ public class QueryContainer {
             return this;
         }
 
-
+        // @Override
+        // public QueryBuilder orderByAll(String key, Order order) {
+        //     super.orderByAll(key, order);
+        //     return this;
+        // }
     }
 
 

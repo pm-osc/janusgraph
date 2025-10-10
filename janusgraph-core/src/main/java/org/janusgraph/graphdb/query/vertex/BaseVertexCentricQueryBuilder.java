@@ -72,6 +72,7 @@ public abstract class BaseVertexCentricQueryBuilder<Q extends BaseVertexQuery<Q>
      * The order in which the relations should be returned. None by default.
      */
     protected final OrderList orders = new OrderList();
+    //protected final OrderList ordersAll = new OrderList();
     /**
      * The limit of this query. No limit by default.
      */
@@ -215,6 +216,20 @@ public abstract class BaseVertexCentricQueryBuilder<Q extends BaseVertexQuery<Q>
         orders.add(key, Order.convert(order));
         return getThis();
     }
+
+    // @Override
+    // public Q orderByAll(String keyName, org.apache.tinkerpop.gremlin.process.traversal.Order order) {
+    //     Preconditions.checkArgument(schemaInspector.containsPropertyKey(keyName), "Provided key does not exist: %s", keyName);
+    //     PropertyKey key = schemaInspector.getPropertyKey(keyName);
+    //     Preconditions.checkArgument(key != null && order != null, "Need to specify and key and an order");
+    //     Preconditions.checkArgument(Comparable.class.isAssignableFrom(key.dataType()),
+    //             "Can only order on keys with comparable data type. [%s] has datatype [%s]", key.name(), key.dataType());
+    //     Preconditions.checkArgument(!(key instanceof SystemRelationType), "Cannot use system types in ordering: %s", key);
+    //     Preconditions.checkArgument(!ordersAll.containsKey(key));
+    //     Preconditions.checkArgument(ordersAll.isEmpty(), "Only a single sort order is supported on vertex queries");
+    //     ordersAll.add(key, Order.convert(order));
+    //     return getThis();
+    // }
 
 
     /* ---------------------------------------------------------------

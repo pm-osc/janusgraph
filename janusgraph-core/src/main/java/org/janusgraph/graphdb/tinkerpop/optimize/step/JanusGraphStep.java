@@ -66,6 +66,7 @@ public class JanusGraphStep<S, E extends Element> extends GraphStep<S, E> implem
     private int lowLimit = 0;
     private int highLimit = BaseQuery.NO_LIMIT;
     private final List<OrderEntry> orders = new ArrayList<>();
+    private final List<OrderEntry> ordersAll = new ArrayList<>();
     private QueryProfiler queryProfiler = QueryProfiler.NO_OP;
     private GraphCentricQuery globalQuery;
     private JanusGraphTransaction tx;
@@ -159,6 +160,7 @@ public class JanusGraphStep<S, E extends Element> extends GraphStep<S, E> implem
             query.or(localQueries);
         }
         for (final OrderEntry order : orders) query.orderBy(order.key, order.order);
+        for (final OrderEntry order : ordersAll) query.orderByAll(order.key, order.order);
         query.limit(Math.min(limit, highLimit));
         return buildGraphCentricQuery(query, globalQueryProfiler);
     }
@@ -178,6 +180,11 @@ public class JanusGraphStep<S, E extends Element> extends GraphStep<S, E> implem
         addConstraint(query, containers.getKey());
         final List<OrderEntry> realOrders = orders.isEmpty() ? containers.getValue().getOrders() : orders;
         for (final OrderEntry order : realOrders) query.orderBy(order.key, order.order);
+        // Note: it is unclear when containers.getValue().getOrders() would return back anything else than empty list
+        // QueryInfo() seems to be always initialized with empty orders list so even if ordersAll would be added
+        // to QueryInfo(), it would be perhaps also always empty
+        final List<OrderEntry> realOrdersAll = ordersAll.isEmpty() ? containers.getValue().getOrders() : ordersAll;;
+        for (final OrderEntry order : realOrdersAll) query.orderByAll(order.key, order.order);
         if (highLimit != BaseQuery.NO_LIMIT || containers.getValue().getHighLimit() != BaseQuery.NO_LIMIT) query.limit(Math.min(containers.getValue().getHighLimit(), highLimit));
         return buildGraphCentricQuery(query, queryProfiler);
     }
@@ -277,6 +284,11 @@ public class JanusGraphStep<S, E extends Element> extends GraphStep<S, E> implem
     }
 
     @Override
+    public void orderByAll(String key, Order order) {
+        ordersAll.add(new OrderEntry(key, order));
+    }
+
+    @Override
     public void localOrderBy(TraversalParent parent, List<HasContainer> containers, String key, Order order) {
         Map<List<HasContainer>, QueryInfo> hasContainers = hasLocalContainers.get(parent.asStep().getId());
         hasContainers.get(containers).getOrders().add(new OrderEntry(key, order));
@@ -335,6 +347,10 @@ public class JanusGraphStep<S, E extends Element> extends GraphStep<S, E> implem
 
     public List<OrderEntry> getOrders() {
         return orders;
+    }
+
+    public List<OrderEntry> getOrdersAll() {
+        return ordersAll;
     }
 
     private <A extends Element> Iterator<A> iteratorList(final Iterator<A> iterator) {

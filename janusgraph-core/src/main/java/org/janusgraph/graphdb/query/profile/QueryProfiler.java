@@ -29,6 +29,7 @@ public interface QueryProfiler {
 
     String CONDITION_ANNOTATION = "condition";
     String ORDERS_ANNOTATION = "orders";
+    String ORDERS_ALL_ANNOTATION = "singleAndListPropertyOrders";
     String LIMIT_ANNOTATION = "limit";
 
     String MULTIQUERY_ANNOTATION = "multi";

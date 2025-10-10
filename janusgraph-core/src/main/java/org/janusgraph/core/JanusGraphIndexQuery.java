@@ -56,6 +56,8 @@ public interface JanusGraphIndexQuery {
      */
     JanusGraphIndexQuery orderBy(String key, Order order);
 
+    JanusGraphIndexQuery orderByAll(String key, Order order);
+
     /**
      * Adds the given parameter to the list of parameters of this query.
      * Parameters are passed right through to the indexing backend to modify the query behavior.

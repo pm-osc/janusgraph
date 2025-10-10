@@ -51,7 +51,7 @@ public class BruteForceIndexSelectionStrategy
     @Override
     public SelectedIndexQuery selectIndices(final Set<IndexType> rawCandidates,
                                             final MultiCondition<JanusGraphElement> conditions,
-                                            final Set<Condition> coveredClauses, OrderList orders,
+                                            final Set<Condition> coveredClauses, OrderList orders, OrderList ordersAll,
                                             IndexSerializer serializer) {
         final JointIndexQuery jointQuery = new JointIndexQuery();
         final Set<IndexCandidate> indexCandidates = new HashSet<>();
@@ -88,7 +88,7 @@ public class BruteForceIndexSelectionStrategy
                                         IndexSelectionUtil.indexCoversOrder(
                                             (MixedIndexType) bestIndexes.get(0).getIndex(), orders);
             for (IndexCandidate c : bestIndexes) {
-                addToJointQuery(c, jointQuery, serializer, orders);
+                addToJointQuery(c, jointQuery, serializer, orders, ordersAll);
             }
         }
 

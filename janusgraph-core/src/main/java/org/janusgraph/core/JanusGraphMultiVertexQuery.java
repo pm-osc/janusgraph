@@ -102,6 +102,9 @@ public interface JanusGraphMultiVertexQuery<Q extends JanusGraphMultiVertexQuery
     @Override
     Q orderBy(String key, Order order);
 
+    // @Override
+    // Q orderByAll(String key, Order order);
+
    /* ---------------------------------------------------------------
     * Query execution
     * ---------------------------------------------------------------

@@ -52,6 +52,7 @@ public class GraphCentricQuery extends BaseQuery implements ElementQuery<JanusGr
      * The result order of this query (if any)
      */
     private final OrderList orders;
+    private final OrderList ordersAll;
     /**
      * The type of element this query is asking for: vertex, edge, or property.
      */
@@ -59,22 +60,24 @@ public class GraphCentricQuery extends BaseQuery implements ElementQuery<JanusGr
 
     private QueryProfiler profiler;
 
-    public GraphCentricQuery(ElementCategory resultType, Condition<JanusGraphElement> condition, OrderList orders,
+    public GraphCentricQuery(ElementCategory resultType, Condition<JanusGraphElement> condition, OrderList orders, OrderList ordersAll,
                              BackendQueryHolder<JointIndexQuery> indexQuery, int limit) {
         super(limit);
         Preconditions.checkNotNull(condition);
         Preconditions.checkArgument(orders != null && orders.isImmutable());
+        Preconditions.checkArgument(ordersAll != null && ordersAll.isImmutable());
         Preconditions.checkNotNull(resultType);
         Preconditions.checkNotNull(indexQuery);
         this.condition = condition;
         this.orders = orders;
+        this.ordersAll = ordersAll;
         this.resultType = resultType;
         this.indexQuery = indexQuery;
     }
 
     public static GraphCentricQuery emptyQuery(ElementCategory resultType) {
         final Condition<JanusGraphElement> cond = new FixedCondition<>(false);
-        return new GraphCentricQuery(resultType, cond, OrderList.NO_ORDER,
+        return new GraphCentricQuery(resultType, cond, OrderList.NO_ORDER, OrderList.NO_ORDER,
                 new BackendQueryHolder<>(new JointIndexQuery(),
                         true, false), 0);
     }
@@ -89,6 +92,10 @@ public class GraphCentricQuery extends BaseQuery implements ElementQuery<JanusGr
 
     public OrderList getOrder() {
         return orders;
+    }
+
+    public OrderList getOrderAll() {
+        return ordersAll;
     }
 
     @Override
@@ -162,7 +169,8 @@ public class GraphCentricQuery extends BaseQuery implements ElementQuery<JanusGr
     public void observeWith(QueryProfiler profiler, boolean hasSiblings) {
         this.profiler = profiler;
         profiler.setAnnotation(QueryProfiler.CONDITION_ANNOTATION,condition);
-        profiler.setAnnotation(QueryProfiler.ORDERS_ANNOTATION,orders);
+        profiler.setAnnotation(QueryProfiler.ORDERS_ANNOTATION, orders);
+        profiler.setAnnotation(QueryProfiler.ORDERS_ALL_ANNOTATION, ordersAll);
         if (hasLimit()) profiler.setAnnotation(QueryProfiler.LIMIT_ANNOTATION,getLimit());
         indexQuery.observeWith(profiler);
     }

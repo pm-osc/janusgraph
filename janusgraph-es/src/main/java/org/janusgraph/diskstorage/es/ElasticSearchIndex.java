@@ -39,6 +39,7 @@ import org.janusgraph.diskstorage.TemporaryBackendException;
 import org.janusgraph.diskstorage.configuration.ConfigNamespace;
 import org.janusgraph.diskstorage.configuration.ConfigOption;
 import org.janusgraph.diskstorage.configuration.Configuration;
+import org.janusgraph.diskstorage.es.ElasticSearchRequest.RestSortInfo;
 import org.janusgraph.diskstorage.es.compat.AbstractESCompat;
 import org.janusgraph.diskstorage.es.compat.ESCompatUtils;
 import org.janusgraph.diskstorage.es.mapping.IndexMapping;
@@ -1220,7 +1221,17 @@ public class ElasticSearchIndex implements IndexProvider {
         final ElasticSearchRequest sr = new ElasticSearchRequest();
         final Map<String,Object> esQuery = getFilter(query.getCondition(), informations.get(query.getStore()));
         sr.setQuery(compat.prepareQuery(esQuery));
-        if (!query.getOrder().isEmpty()) {
+
+        System.err.println("####################### ELASTIC QUERY");
+        System.err.println(query.getOrder());
+        System.err.println("----");
+        System.err.println(query.getOrderAll());
+
+        // first try getting orders for both single and list cardinality properties
+        if (!query.getOrderAll().isEmpty()) {
+            addOrderToQuery(informations, sr, query.getOrderAll(), query.getStore());
+        }
+        else if (!query.getOrder().isEmpty()) {
             addOrderToQuery(informations, sr, query.getOrder(), query.getStore());
         }
         sr.setFrom(0);
@@ -1228,6 +1239,13 @@ public class ElasticSearchIndex implements IndexProvider {
             sr.setSize(Math.min(query.getLimit(), batchSize));
         } else {
             sr.setSize(batchSize);
+        }
+
+        System.err.println(";;;;;;;;;;;;;;;;;;;;;;;;;;;");
+        for (Map<String, RestSortInfo> x : sr.getSorts()) {
+            for (Map.Entry<String, RestSortInfo> entry : x.entrySet()) {
+                System.err.println(entry.getKey() + " -- " + entry.getValue().getOrder());
+            }
         }
 
         sr.setDisableSourceRetrieval(true);

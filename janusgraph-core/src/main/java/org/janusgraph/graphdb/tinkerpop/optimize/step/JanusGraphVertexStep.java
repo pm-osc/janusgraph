@@ -104,6 +104,7 @@ public class JanusGraphVertexStep<E extends Element> extends VertexStep<E> imple
             query.has(condition.getKey(), JanusGraphPredicateUtils.convert(condition.getBiPredicate()), condition.getValue());
         }
         for (final OrderEntry order : orders) query.orderBy(order.key, order.order);
+        //for (final OrderEntry order : ordersAll) query.orderByAll(order.key, order.order);
         if (limit != BaseQuery.NO_LIMIT) query.limit(limit);
         ((BasicVertexCentricQueryBuilder) query).profiler(queryProfiler);
         return query;
@@ -138,6 +139,7 @@ public class JanusGraphVertexStep<E extends Element> extends VertexStep<E> imple
     private final ArrayList<HasContainer> hasContainers;
     private int limit;
     private final List<OrderEntry> orders = new ArrayList<>();
+    private final List<OrderEntry> ordersAll = new ArrayList<>();
 
     @Override
     public void ensureAdditionalHasContainersCapacity(int additionalSize) {
@@ -162,6 +164,11 @@ public class JanusGraphVertexStep<E extends Element> extends VertexStep<E> imple
     @Override
     public void orderBy(String key, Order order) {
         orders.add(new OrderEntry(key, order));
+    }
+
+    @Override
+    public void orderByAll(String key, Order order) {
+        ordersAll.add(new OrderEntry(key, order));
     }
 
     @Override

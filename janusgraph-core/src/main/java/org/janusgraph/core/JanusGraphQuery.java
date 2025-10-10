@@ -79,6 +79,8 @@ public interface JanusGraphQuery<Q extends JanusGraphQuery<Q>> {
      */
     Q orderBy(String key, Order order);
 
+    Q orderByAll(String key, Order order);
+
 
     /* ---------------------------------------------------------------
     * Query Execution

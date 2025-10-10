@@ -393,7 +393,7 @@ public class IndexSerializer {
         return new MultiKeySliceQuery(ksqs);
     }
 
-    public IndexQuery getQuery(final MixedIndexType index, final Condition condition, final OrderList orders) {
+    public IndexQuery getQuery(final MixedIndexType index, final Condition condition, final OrderList orders, final OrderList ordersAll) {
         final Condition newCondition = ConditionUtil.literalTransformation(condition,
             new Function<Condition<JanusGraphElement>, Condition<JanusGraphElement>>() {
                 @Nullable
@@ -413,7 +413,17 @@ public class IndexSerializer {
             }
             newOrders = lb.build();
         }
-        return new IndexQuery(index.getStoreName(), newCondition, newOrders);
+
+        ImmutableList<IndexQuery.OrderEntry> newOrdersAll = IndexQuery.NO_ORDER;
+        if (!ordersAll.isEmpty() && IndexSelectionUtil.indexCoversOrder(index,ordersAll)) {
+            final ImmutableList.Builder<IndexQuery.OrderEntry> lb = ImmutableList.builder();
+            for (int i = 0; i < ordersAll.size(); i++) {
+                lb.add(new IndexQuery.OrderEntry(key2Field(index,ordersAll.getKey(i)), ordersAll.getOrder(i), ordersAll.getKey(i).dataType()));
+            }
+            newOrdersAll = lb.build();
+        }
+
+        return new IndexQuery(index.getStoreName(), newCondition, newOrders, newOrdersAll, getMixedIndex(index).getFeatures().supportsOrderingListProperty());
     }
 
 

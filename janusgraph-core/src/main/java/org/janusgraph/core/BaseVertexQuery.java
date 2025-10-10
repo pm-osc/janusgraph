@@ -175,6 +175,8 @@ public interface BaseVertexQuery<Q extends BaseVertexQuery<Q>> {
      * @return
      */
     Q orderBy(String key, Order order);
+    
+    //Q orderByAll(String key, Order order);
 
 
 }

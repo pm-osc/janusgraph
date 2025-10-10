@@ -76,6 +76,7 @@ public class IndexQueryBuilder extends BaseQuery implements JanusGraphIndexQuery
      * Sorting parameters
      */
     private final List<Parameter<Order>> orders;
+    private final List<Parameter<Order>> ordersAll;
     /**
      * Parameters passed to the indexing backend during query execution to modify the execution behavior.
      */
@@ -104,6 +105,7 @@ public class IndexQueryBuilder extends BaseQuery implements JanusGraphIndexQuery
 
         parameters = new ArrayList<>();
         orders = new ArrayList<>();
+        ordersAll = new ArrayList<>();
         unknownKeyName = tx.getGraph().getConfiguration().getUnknownIndexKeyName();
         this.offset=0;
     }
@@ -129,6 +131,13 @@ public class IndexQueryBuilder extends BaseQuery implements JanusGraphIndexQuery
             return Collections.emptyList();
         }
         return Collections.unmodifiableList(orders);
+    }
+
+    public List<Parameter<Order>> getOrdersAll() {
+        if (ordersAll.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(ordersAll);
     }
 
     public int getOffset() {
@@ -178,6 +187,13 @@ public class IndexQueryBuilder extends BaseQuery implements JanusGraphIndexQuery
     public JanusGraphIndexQuery orderBy(String key, Order order) {
         Preconditions.checkArgument(key!=null && order!=null,"Need to specify and key and an order");
         orders.add(Parameter.of(key, order));
+        return this;
+    }
+
+    @Override
+    public JanusGraphIndexQuery orderByAll(String key, Order order) {
+        Preconditions.checkArgument(key!=null && order!=null,"Need to specify and key and an order");
+        ordersAll.add(Parameter.of(key, order));
         return this;
     }
 
