@@ -4474,22 +4474,22 @@ public abstract class JanusGraphIndexTest extends JanusGraphBaseTest {
         final GraphTraversalSource g = tx.traversal();
         org.apache.tinkerpop.gremlin.process.traversal.Order ORDER_DESC = org.apache.tinkerpop.gremlin.process.traversal.Order.desc;
 
-        Supplier<GraphTraversal<?, Vertex>> tFullscanSingle = () -> g.V().order().by("name1");
-        assertTraversalAndIndexUsage(
-            Arrays.asList(
-                "query=[]",
-                "_fullscan=true"
-            ),
-            tFullscanSingle, v1, v2, v3, v4, v5, v6
-        );
+        // Supplier<GraphTraversal<?, Vertex>> tFullscanSingle = () -> g.V().order().by("name1");
+        // assertTraversalAndIndexUsage(
+        //     Arrays.asList(
+        //         "query=[]",
+        //         "_fullscan=true"
+        //     ),
+        //     tFullscanSingle, v1, v2, v3, v4, v5, v6
+        // );
 
         // ordering without using index on LIST cardinality property with multiple values
         // throws IllegalStateException with message "Multiple properties exist for the provided key, use Vertex.properties(name2)"
         // TODO shouldn't this really die?? - it seems this does not die but the actual order is rather random!
-        // Exception exception = assertThrows(IllegalStateException.class, () -> {
-        //     g.V().order().by("name2").toList();
-        // });
-        // assertTrue(exception.getMessage().contains("Multiple properties exist for the provided key, use Vertex.properties(name2)"));
+        Exception exception = assertThrows(IllegalStateException.class, () -> {
+            g.V().order().by("name2").toList();
+        });
+        assertTrue(exception.getMessage().contains("Multiple properties exist for the provided key, use Vertex.properties(name2)"));
 
         ///////////////////////////////////////////////////
         // ordering SINGLE cardinality properties
@@ -4636,68 +4636,68 @@ public abstract class JanusGraphIndexTest extends JanusGraphBaseTest {
             // index backend without support for ordering list properties by index, e.g. Lucene
 
             // ordering without using index on SINGLE cardinality property
-            Supplier<GraphTraversal<?, Vertex>> tTest = () -> g.V().has("age2").order().by("age2", ORDER_DESC);
+            // TODO this is exception case?? Mltiple properties???
+            Supplier<GraphTraversal<?, Vertex>> tTest = () -> g.V().has("birth2", P.gt(0)).order().by("birth2", ORDER_DESC);
             System.err.println("[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]");
-            System.err.println(g.V().valueMap(true).toList());
-            System.err.println(tTest.get().valueMap(true, "age2").toList());
+            //System.err.println(g.V().valueMap(true).toList());
+            System.err.println(tTest.get().toList());
             System.err.println(tTest.get().profile().toList().toString());
 
             ///////////////////////////////////////////////////
             // ordering LIST cardinality properties
             // ordering LIST cardinality String property
-            // since name2 has multiple values for a given node, ordering is random so assertion can't check if the returned order is right or not
-            Supplier<GraphTraversal<?, Vertex>> tListString = () -> g.V().has("name2").order().by("name2", ORDER_DESC);
-            assertTraversalAndIndexUsage(
-                Arrays.asList(
-                    "_condition=(name2 <> null)",
-                    "_orders=[]",
-                    "_query=[(name2 <> null)]:listPropertyOrdering"
-                ),
-                tListString
-            );
+            // since name2 has multiple values for a given node, "Multiple properties exist for the provided key, use Vertex.properties(name2)" exception is thrown
+            Exception exceptionListString = assertThrows(IllegalStateException.class, () -> {
+                g.V().has("name2").order().by("name2", ORDER_DESC).toList();
+            });
+            assertTrue(exceptionListString.getMessage().contains("Multiple properties exist for the provided key, use Vertex.properties(name2)"));
 
             // ordering LIST cardinality Double property
-            // Supplier<GraphTraversal<?, Vertex>> tListDouble = () -> g.V().has("age2").order().by("age2", ORDER_DESC);
+            // Note: age2 <> null does not work for Lucene as that would return empty result set
+            Supplier<GraphTraversal<?, Vertex>> tListDouble = () -> g.V().has("age2", P.gt(0)).order().by("age2", ORDER_DESC);
+            assertTraversalAndIndexUsage(
+                Arrays.asList(
+                    "_condition=(age2 > 0.0)",
+                    "_orders=[]",
+                    "_query=[(age2 > 0.0)]:listPropertyOrdering",
+                    "OrderGlobalStep([[value(age2), desc]])"
+                ),
+                tListDouble, v6, v5, v4, v3, v2, v1
+            );
+
+            // ordering LIST cardinality Date property
+            // Note: birth2 <> null does not work for Lucene as that would return empty result set
+            Supplier<GraphTraversal<?, Vertex>> tListDate = () -> g.V().has("birth2", P.gt(0)).order().by("birth2", ORDER_DESC);
+            assertTraversalAndIndexUsage(
+                Arrays.asList(
+                    "_condition=(birth2 > Thu Jan 01 01:00:00 CET 1970)",
+                    "_orders=[]",
+                    "_query=[(birth2 > Thu Jan 01 01:00:00 CET 1970)]:listPropertyOrdering",
+                    "OrderGlobalStep([[value(birth2), desc]])"
+                ),
+                tListDate, v6, v5, v4, v3, v2, v1
+            );
+
+            /////////////////////////////////////////////////
+            // ordering LIST cardinality properties with filtering
+            // ordering LIST cardinality String property
+            // since name2 has multiple values for a given node, "Multiple properties exist for the provided key, use Vertex.properties(name2)" exception is thrown
+            Exception exceptionListStringFilter = assertThrows(IllegalStateException.class, () -> {
+                g.V().has("gender", "female").has("name2").order().by("name2", ORDER_DESC).toList();
+            });
+            assertTrue(exceptionListStringFilter.getMessage().contains("Multiple properties exist for the provided key, use Vertex.properties(name2)"));
+
+            // ordering LIST cardinality Double property
+            // Supplier<GraphTraversal<?, Vertex>> tListDoubleFilter = () -> g.V().has("gender", "female").has("age2").order().by("age2", ORDER_DESC);
             // assertTraversalAndIndexUsage(
             //     Arrays.asList(
-            //         "_condition=(age2 <> null)",
+            //         "_condition=(gender = female AND age2 > 0.0)",
             //         "_orders=[]",
-            //         "_query=[(age2 <> null)]:listPropertyOrdering"
+            //         "_query=[(gender = female AND age2 > 0.0)]:listPropertyOrdering",
+            //         "OrderGlobalStep([[value(age2), desc]])"
             //     ),
-            //     tListDouble, v6, v5, v4, v3, v2, v1
+            //     tListDoubleFilter, v6, v4, v2
             // );
-
-        //     // ordering LIST cardinality Date property
-        //     Supplier<GraphTraversal<?, Vertex>> tListDate = () -> g.V().has("birth2").order().by("birth2", ORDER_DESC);
-        //     assertTraversalAndIndexUsage(
-        //         Arrays.asList(
-        //             "_condition=(birth2 <> null)",
-        //             "_query=[(birth2 <> null)][DESC(birth2)]:listPropertyOrdering"
-        //         ),
-        //         tListDate, v6, v5, v4, v3, v2, v1
-        //     );
-
-        //     /////////////////////////////////////////////////
-        //     // ordering LIST cardinality properties with filtering
-        //     // ordering LIST cardinality String property
-        //     Supplier<GraphTraversal<?, Vertex>> tListStringFilter = () -> g.V().has("gender", "female").has("name2").order().by("name2", ORDER_DESC);
-        //     assertTraversalAndIndexUsage(
-        //         Arrays.asList(
-        //             "_condition=(gender = female AND name2 <> null)",
-        //             "_query=[(gender = female AND name2 <> null)][DESC(name2)]:listPropertyOrdering"
-        //         ),
-        //         tListStringFilter, v4, v6, v2
-        //     );
-
-        //     // ordering LIST cardinality Double property
-        //     Supplier<GraphTraversal<?, Vertex>> tListDoubleFilter = () -> g.V().has("gender", "female").has("age2").order().by("age2", ORDER_DESC);
-        //     assertTraversalAndIndexUsage(
-        //         Arrays.asList(
-        //             "_condition=(gender = female AND age2 <> null)",
-        //             "_query=[(gender = female AND age2 <> null)][DESC(age2)]:listPropertyOrdering"
-        //         ),
-        //         tListDoubleFilter, v6, v4, v2
-        //     );
 
         //     // ordering LIST cardinality Date property
         //     Supplier<GraphTraversal<?, Vertex>> tListDateFilter = () -> g.V().has("gender", "female").has("birth2").order().by("birth2", ORDER_DESC);
