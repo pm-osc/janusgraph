@@ -63,7 +63,6 @@ public abstract class ElasticsearchJanusGraphIndexTest extends JanusGraphIndexTe
         String[] indexBackends = getIndexBackends();
         ModifiableConfiguration config =  esr.setConfiguration(getStorageConfiguration(), indexBackends);
         for (String indexBackend : indexBackends) {
-            config.set(GraphDatabaseConfiguration.INDEX_BACKEND, "elasticsearch", indexBackend);
             config.set(GraphDatabaseConfiguration.INDEX_MAX_RESULT_SET_SIZE, 3, indexBackend);
         }
         return config.getConfiguration();
