@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class BerkeleyLuceneTest extends JanusGraphIndexTest {
 
     public BerkeleyLuceneTest() {
-        super(true, true, true);
+        super(true, true, true, false);
     }
 
     @Override
